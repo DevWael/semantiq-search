@@ -43,7 +43,7 @@ class LocalEmbeddingProvider implements EmbeddingProviderInterface {
         $args = [
             'method'  => 'POST',
             'headers' => $headers,
-            'body'    => wp_json_encode(['text' => $text]),
+            'body'    => wp_json_encode(['input' => $text]),
             'timeout' => 30,
         ];
 
@@ -65,12 +65,20 @@ class LocalEmbeddingProvider implements EmbeddingProviderInterface {
             throw new EmbeddingException("Embedding API Error: {$error}", $status_code);
         }
 
-        if (empty($data['embedding']) || !is_array($data['embedding'])) {
+        // Support both direct 'embedding' key and OpenAI-style 'data[0].embedding'
+        $embedding = null;
+        if (!empty($data['embedding']) && is_array($data['embedding'])) {
+            $embedding = $data['embedding'];
+        } elseif (!empty($data['data'][0]['embedding']) && is_array($data['data'][0]['embedding'])) {
+            $embedding = $data['data'][0]['embedding'];
+        }
+
+        if (!$embedding) {
             $this->logger->error("Invalid embedding response format");
             throw new EmbeddingException("Invalid embedding response format");
         }
 
-        return $data['embedding'];
+        return $embedding;
     }
 
     /**

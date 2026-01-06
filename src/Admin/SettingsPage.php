@@ -56,11 +56,14 @@ class SettingsPage {
 
         add_settings_field(
             'qdrant_api_key',
-            __('API Key', 'semantiq-search'),
+            __('API Key (Optional)', 'semantiq-search'),
             [$this, 'render_password_field'],
             'semantiq-search',
             'semantiq_qdrant_section',
-            ['label_for' => 'qdrant_api_key']
+            [
+                'label_for' => 'qdrant_api_key',
+                'description' => __('Leave blank if your Qdrant service is self-hosted and doesn\'t require an API key.', 'semantiq-search')
+            ]
         );
 
         add_settings_field(
@@ -91,11 +94,14 @@ class SettingsPage {
 
         add_settings_field(
             'embedding_api_key',
-            __('API Key', 'semantiq-search'),
+            __('API Key (Optional)', 'semantiq-search'),
             [$this, 'render_password_field'],
             'semantiq-search',
             'semantiq_embedding_section',
-            ['label_for' => 'embedding_api_key']
+            [
+                'label_for' => 'embedding_api_key',
+                'description' => __('Only required if you are using a cloud-based embedding service that requires authentication.', 'semantiq-search')
+            ]
         );
 
         // Content Section
@@ -180,6 +186,9 @@ class SettingsPage {
         $options = get_option('semantiq_settings');
         $value = $options[$args['label_for']] ?? '';
         echo "<input type='password' id='{$args['label_for']}' name='semantiq_settings[{$args['label_for']}]' value='" . esc_attr($value) . "' class='regular-text'>";
+        if (!empty($args['description'])) {
+            echo "<p class='description'>" . esc_html($args['description']) . "</p>";
+        }
     }
 
     /**

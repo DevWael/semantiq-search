@@ -73,7 +73,7 @@ class Config {
      * Get Embedding URL
      */
     public function get_embedding_url(): string {
-        return (string) $this->get('embedding_url', 'http://localhost:8000/embed');
+        return (string) $this->get('embedding_url', 'http://localhost:8000/v1/embeddings');
     }
 
     /**
