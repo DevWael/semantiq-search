@@ -1,0 +1,90 @@
+.semantiq-sync-container {
+    max-width: 600px;
+    margin-top: 20px;
+    padding: 20px;
+}
+
+.sync-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status-badge.ready {
+    background: #e7f3ff;
+    color: #0073aa;
+}
+
+.status-badge.running {
+    background: #fff8e5;
+    color: #856404;
+}
+
+.sync-progress-bar-wrapper {
+    margin-bottom: 20px;
+}
+
+.sync-progress-bar {
+    height: 20px;
+    background: #f0f0f1;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #c3c4c7;
+}
+
+.sync-progress-fill {
+    height: 100%;
+    background: #2271b1;
+    transition: width 0.3s ease;
+}
+
+.sync-progress-text {
+    text-align: right;
+    font-size: 12px;
+    margin-top: 5px;
+    color: #646970;
+}
+
+.sync-stats {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 20px;
+    background: #f6f7f7;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.stat-item .label {
+    font-weight: 600;
+    margin-right: 5px;
+}
+
+.sync-log {
+    margin-top: 20px;
+    border-top: 1px solid #c3c4c7;
+    padding-top: 15px;
+}
+
+.sync-log ul {
+    max-height: 200px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #dcdcde;
+    padding: 10px;
+}
+
+.sync-log li {
+    color: #d63638;
+    margin-bottom: 5px;
+    font-size: 13px;
+}

@@ -1,0 +1,119 @@
+.semantiq-search-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.semantiq-search-form .semantiq-input-wrapper {
+    display: flex;
+    gap: 10px;
+    background: #fff;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.semantiq-search-form .semantiq-input-wrapper:focus-within {
+    border-color: #2271b1;
+    box-shadow: 0 4px 20px rgba(34, 113, 177, 0.15);
+}
+
+.semantiq-search-form input[type="text"] {
+    flex: 1;
+    border: none !important;
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    outline: none !important;
+    background: transparent;
+    border-radius: 30px;
+}
+
+.semantiq-search-form button {
+    background: #2271b1;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.semantiq-search-form button:hover {
+    background: #135e96;
+}
+
+.semantiq-results-container {
+    margin-top: 2rem;
+}
+
+.semantiq-result-group {
+    margin-bottom: 2rem;
+}
+
+.semantiq-result-group h3 {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    text-transform: capitalize;
+}
+
+.semantiq-result-item {
+    padding: 15px;
+    border-radius: 8px;
+    background: #fdfdfd;
+    border: 1px solid #f0f0f0;
+    margin-bottom: 10px;
+    transition: transform 0.2s ease;
+}
+
+.semantiq-result-item:hover {
+    transform: translateX(5px);
+    background: #fff;
+    border-color: #ddd;
+}
+
+.semantiq-result-item a {
+    text-decoration: none;
+    color: #2271b1;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.semantiq-result-excerpt {
+    margin-top: 5px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.semantiq-no-results {
+    text-align: center;
+    padding: 40px;
+    color: #888;
+}
+
+/* Loader */
+.semantiq-loader {
+    text-align: center;
+    padding: 40px;
+}
+
+.semantiq-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2271b1;
+    border-radius: 50%;
+    animation: semantiq-spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes semantiq-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

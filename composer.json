@@ -1,0 +1,26 @@
+{
+    "name": "ahmadwael/semantiq-search",
+    "description": "Vector-based semantic search for WordPress using Qdrant and local embeddings",
+    "type": "wordpress-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ahmad Wael",
+            "email": "dev.ahmedwael@gmail.com"
+        }
+    ],
+    "minimum-php": "7.4",
+    "autoload": {
+        "psr-4": {
+            "SemantiQ\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=7.4"
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true
+        }
+    }
+}
