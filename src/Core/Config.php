@@ -95,6 +95,6 @@ class Config {
      * Get Batch Size
      */
     public function get_batch_size(): int {
-        return (int) $this->get('batch_size', 50);
+        return (int) $this->get('batch_size', 5);
     }
 }

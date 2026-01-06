@@ -6,5 +6,6 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Tenqz\\Qdrant\\' => array($vendorDir . '/tenqz/qdrant/src'),
     'SemantiQ\\' => array($baseDir . '/src'),
 );

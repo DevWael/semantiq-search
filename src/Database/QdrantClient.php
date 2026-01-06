@@ -53,13 +53,13 @@ class QdrantClient {
     /**
      * Remote Request
      */
-    private function request(string $endpoint, string $method = 'GET', ?array $body = null): array {
+    private function request(string $endpoint, string $method = 'GET', ?array $body = null, int $timeout = 10): array {
         $url = $this->get_base_url() . $endpoint;
         
         $args = [
             'method'  => $method,
             'headers' => $this->get_headers(),
-            'timeout' => 30,
+            'timeout' => $timeout,
         ];
 
         if ($body !== null) {
@@ -94,9 +94,9 @@ class QdrantClient {
         try {
             $collection = $this->config->get_qdrant_collection();
             if ($collection) {
-                $this->request("/collections/{$collection}");
+                $this->request("/collections/{$collection}", 'GET', null, 5);
             } else {
-                $this->request('/');
+                $this->request('/', 'GET', null, 5);
             }
             return true;
         } catch (\Exception $e) {
@@ -109,15 +109,11 @@ class QdrantClient {
      * Upsert Points
      */
     public function upsert_points(string $collection, array $points): bool {
-        try {
-            $this->request("/collections/{$collection}/points", 'PUT', [
-                'points' => $points,
-            ]);
-            return true;
-        } catch (\Exception $e) {
-            $this->logger->error("Failed to upsert points: " . $e->getMessage());
-            return false;
-        }
+        $this->request("/collections/{$collection}/points", 'PUT', [
+            'points' => $points,
+        ]);
+        $this->logger->info("Successfully upserted " . count($points) . " points to collection: {$collection}");
+        return true;
     }
 
     /**
@@ -173,7 +169,7 @@ class QdrantClient {
      */
     public function get_collections(): array {
         try {
-            $data = $this->request('/collections');
+            $data = $this->request('/collections', 'GET', null, 5);
             $collections = [];
             if (isset($data['result']['collections'])) {
                 foreach ($data['result']['collections'] as $collection) {

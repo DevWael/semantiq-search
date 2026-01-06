@@ -16,7 +16,8 @@
         }
     },
     "require": {
-        "php": ">=7.4"
+        "php": ">=7.4",
+        "tenqz/qdrant": "^1.0"
     },
     "config": {
         "allow-plugins": {

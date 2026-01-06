@@ -28,7 +28,7 @@ class LocalEmbeddingProvider implements EmbeddingProviderInterface {
     /**
      * Generate embedding
      */
-    public function embed(string $text): array {
+    public function embed(string $text, int $timeout = 10): array {
         $url = $this->config->get_embedding_url();
         $api_key = $this->config->get_embedding_api_key();
 
@@ -44,7 +44,7 @@ class LocalEmbeddingProvider implements EmbeddingProviderInterface {
             'method'  => 'POST',
             'headers' => $headers,
             'body'    => wp_json_encode(['input' => $text]),
-            'timeout' => 30,
+            'timeout' => $timeout,
         ];
 
         $response = wp_remote_post($url, $args);
@@ -86,8 +86,8 @@ class LocalEmbeddingProvider implements EmbeddingProviderInterface {
      */
     public function test_connection(): bool {
         try {
-            // Simple test with minimal text
-            $this->embed('test');
+            // Simple test with minimal text and short timeout
+            $this->embed('test', 5);
             return true;
         } catch (\Exception $e) {
             return false;

@@ -49,6 +49,14 @@ class SyncManager implements SyncManagerInterface {
      * Start Bulk Sync
      */
     public function start_bulk_sync(): void {
+        // Ensure collection exists before starting sync
+        $collection = $this->config->get_qdrant_collection();
+        $embedding_provider = new LocalEmbeddingProvider();
+        $vector_size = $embedding_provider->get_vector_size();
+        
+        // Try to create collection (will fail silently if it already exists)
+        $this->qdrant->create_collection($collection, $vector_size);
+        
         $post_types = $this->config->get_enabled_post_types();
         $total = $this->meta->get_total_posts_count($post_types);
         

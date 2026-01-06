@@ -7,6 +7,10 @@ namespace Composer\Autoload;
 class ComposerStaticInit56de2ad43e6733f0adad77fceb74482b
 {
     public static $prefixLengthsPsr4 = array (
+        'T' => 
+        array (
+            'Tenqz\\Qdrant\\' => 13,
+        ),
         'S' => 
         array (
             'SemantiQ\\' => 9,
@@ -14,6 +18,10 @@ class ComposerStaticInit56de2ad43e6733f0adad77fceb74482b
     );
 
     public static $prefixDirsPsr4 = array (
+        'Tenqz\\Qdrant\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/tenqz/qdrant/src',
+        ),
         'SemantiQ\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
