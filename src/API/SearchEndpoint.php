@@ -19,8 +19,8 @@ class SearchEndpoint {
      * Handle Search
      */
     public function handle(\WP_REST_Request $request): \WP_REST_Response {
-        $params = $request->get_json_params();
-        $query = $params['query'] ?? '';
+        $body_params = $request->get_body_params();
+        $query = $body_params['query'] ?? '';
 
         if (empty($query)) {
             return new \WP_REST_Response([
@@ -33,8 +33,8 @@ class SearchEndpoint {
             $search_service = new SearchService();
             $results = $search_service->search(
                 $query,
-                (int) ($params['limit'] ?? 10),
-                (array) ($params['post_types'] ?? [])
+                (int) ($body_params['limit'] ?? 10),
+                (array) ($body_params['post_types'] ?? [])
             );
 
             return new \WP_REST_Response([
