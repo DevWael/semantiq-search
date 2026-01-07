@@ -40,10 +40,10 @@ class AdminNotices {
         }
 
         // 2. Check Connection (Cache this in a transient to avoid overhead)
-        $connection_ok = get_transient('semantiq_connection_ok');
+        $connection_ok = get_transient('semantiq_connection_okx');
         if (false === $connection_ok) {
             $connection_ok = $qdrant->test_connection();
-            set_transient('semantiq_connection_ok', (int) $connection_ok, HOUR_IN_SECONDS);
+            //set_transient('semantiq_connection_ok', (int) $connection_ok, HOUR_IN_SECONDS);
         }
 
         if (!$connection_ok) {
