@@ -7,6 +7,9 @@ namespace SemantiQ\Database;
 use SemantiQ\Core\Config;
 use SemantiQ\Core\Logger;
 use SemantiQ\Core\QdrantException;
+use Tenqz\Qdrant\QdrantClient as TenqzQdrantClient;
+use Tenqz\Qdrant\Transport\Infrastructure\Factory\CurlHttpClientFactory;
+use Tenqz\Qdrant\Transport\Domain\Exception\TransportException;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -19,72 +22,46 @@ class QdrantClient {
 
     private $config;
     private $logger;
+    private $client;
 
     public function __construct() {
         $this->config = Config::get_instance();
         $this->logger = Logger::get_instance();
+        $this->initializeClient();
     }
 
     /**
-     * Get Base URL
+     * Initialize Qdrant Client
      */
-    private function get_base_url(): string {
-        $host = rtrim($this->config->get_qdrant_host(), '/');
+    private function initializeClient(): void {
+        $originalHost = $this->config->get_qdrant_host();
         $port = $this->config->get_qdrant_port();
-        return "{$host}:{$port}";
-    }
-
-    /**
-     * Get Headers
-     */
-    private function get_headers(): array {
-        $headers = [
-            'Content-Type' => 'application/json',
-        ];
-
-        $api_key = $this->config->get_qdrant_api_key();
-        if ($api_key) {
-            $headers['api-key'] = $api_key;
-        }
-
-        return $headers;
-    }
-
-    /**
-     * Remote Request
-     */
-    private function request(string $endpoint, string $method = 'GET', ?array $body = null, int $timeout = 10): array {
-        $url = $this->get_base_url() . $endpoint;
+        $apiKey = $this->config->get_qdrant_api_key();
         
-        $args = [
-            'method'  => $method,
-            'headers' => $this->get_headers(),
-            'timeout' => $timeout,
-        ];
-
-        if ($body !== null) {
-            $args['body'] = wp_json_encode($body);
+        // Detect scheme and strip from host
+        $scheme = 'http';
+        $host = $originalHost;
+        
+        if (preg_match('#^https://#', $host)) {
+            $scheme = 'https';
+            $host = preg_replace('#^https://#', '', $host);
+        } elseif (preg_match('#^http://#', $host)) {
+            $scheme = 'http';
+            $host = preg_replace('#^http://#', '', $host);
         }
-
-        $response = wp_remote_request($url, $args);
-
-        if (is_wp_error($response)) {
-            $error_message = $response->get_error_message();
-            $this->logger->error("Qdrant Request Failed: {$error_message}");
-            throw new QdrantException("Qdrant Request Failed: {$error_message}");
+        
+        $this->logger->info("Initializing Qdrant client with host: {$host}, port: {$port}, scheme: {$scheme}");
+        
+        try {
+            $factory = new CurlHttpClientFactory();
+            // Pass scheme as the 5th parameter
+            $httpClient = $factory->create($host, $port, $apiKey, 30, $scheme);
+            
+            $this->client = new TenqzQdrantClient($httpClient);
+        } catch (\Exception $e) {
+            $this->logger->error("Failed to initialize Qdrant client: " . $e->getMessage());
+            throw $e;
         }
-
-        $status_code = wp_remote_retrieve_response_code($response);
-        $response_body = wp_remote_retrieve_body($response);
-        $data = json_decode($response_body, true);
-
-        if ($status_code >= 400) {
-            $error = $data['status']['error'] ?? $data['result']['error'] ?? 'Unknown Error';
-            $this->logger->error("Qdrant API Error ({$status_code}): {$error}");
-            throw new QdrantException("Qdrant API Error: {$error}", $status_code);
-        }
-
-        return $data;
     }
 
     /**
@@ -93,14 +70,21 @@ class QdrantClient {
     public function test_connection(): bool {
         try {
             $collection = $this->config->get_qdrant_collection();
+           
             if ($collection) {
-                $this->request("/collections/{$collection}", 'GET', null, 5);
+                $result = $this->client->getCollection($collection);
+                $this->logger->info("Successfully connected to collection: {$collection}");
             } else {
-                $this->request('/', 'GET', null, 5);
+                $result = $this->client->listCollections();
+                $this->logger->info("Successfully listed collections");
             }
             return true;
         } catch (\Exception $e) {
             $this->logger->error("Qdrant Connection Test Failed: " . $e->getMessage());
+            $this->logger->error("Exception type: " . get_class($e));
+            if (method_exists($e, 'getResponse')) {
+                $this->logger->error("Response: " . print_r($e->getResponse(), true));
+            }
             return false;
         }
     }
@@ -109,23 +93,38 @@ class QdrantClient {
      * Upsert Points
      */
     public function upsert_points(string $collection, array $points): bool {
-        $this->request("/collections/{$collection}/points", 'PUT', [
-            'points' => $points,
-        ]);
-        $this->logger->info("Successfully upserted " . count($points) . " points to collection: {$collection}");
-        return true;
+        try {
+            $result = $this->client->upsertPoints($collection, $points);
+            $this->logger->info("Successfully upserted " . count($points) . " points to collection: {$collection}" . "Result: ". print_r($result, true));
+            return true;
+        } catch (TransportException $e) {
+            $this->logger->error("Failed to upsert points: " . $e->getMessage());
+            throw new QdrantException("Failed to upsert points: " . $e->getMessage(), 0, $e);
+        }
     }
 
+    /**
+     * Get Point by ID
+     */
+    public function get_point(string $collection, int $point_id): ?array {
+        try {
+            $result = $this->client->getPoint($collection, $point_id);
+            return $result['result'] ?? null;
+        } catch (\Exception $e) {
+            $this->logger->error("Failed to get point {$point_id}: " . $e->getMessage());
+            return null;
+        }
+    }
+    
     /**
      * Delete Point
      */
     public function delete_point(string $collection, int $point_id): bool {
         try {
-            $this->request("/collections/{$collection}/points/delete", 'POST', [
-                'points' => [$point_id],
-            ]);
+            $this->client->deletePoints($collection, [$point_id]);
             return true;
         } catch (\Exception $e) {
+            $this->logger->error("Failed to delete point: " . $e->getMessage());
             return false;
         }
     }
@@ -134,18 +133,13 @@ class QdrantClient {
      * Search
      */
     public function search(string $collection, array $vector, int $limit = 10, array $filters = []): array {
-        $body = [
-            'vector'      => $vector,
-            'limit'       => $limit,
-            'with_payload' => true,
-        ];
-
-        if (!empty($filters)) {
-            $body['filter'] = $filters;
+        try {
+            $results = $this->client->search($collection, $vector, $limit, $filters);
+            return $results['result'] ?? [];
+        } catch (TransportException $e) {
+            $this->logger->error("Search failed: " . $e->getMessage());
+            throw new QdrantException("Search failed: " . $e->getMessage(), 0, $e);
         }
-
-        $response = $this->request("/collections/{$collection}/points/search", 'POST', $body);
-        return $response['result'] ?? [];
     }
 
     /**
@@ -153,29 +147,30 @@ class QdrantClient {
      */
     public function create_collection(string $name, int $vector_size): bool {
         try {
-            $this->request("/collections/{$name}", 'PUT', [
-                'vectors' => [
-                    'size'     => $vector_size,
-                    'distance' => 'Cosine',
-                ],
-            ]);
+            $this->client->createCollection($name, $vector_size, 'Cosine');
+            $this->logger->info("Successfully created collection: {$name}");
             return true;
         } catch (\Exception $e) {
+            // Collection might already exist, which is fine
+            $this->logger->info("Collection creation note: " . $e->getMessage());
             return false;
         }
     }
+    
     /**
      * Get Collections
      */
     public function get_collections(): array {
         try {
-            $data = $this->request('/collections', 'GET', null, 5);
+            $response = $this->client->listCollections();
             $collections = [];
-            if (isset($data['result']['collections'])) {
-                foreach ($data['result']['collections'] as $collection) {
+            
+            if (isset($response['result']['collections'])) {
+                foreach ($response['result']['collections'] as $collection) {
                     $collections[] = $collection['name'];
                 }
             }
+            
             return $collections;
         } catch (\Exception $e) {
             $this->logger->error("Failed to fetch collections: " . $e->getMessage());
