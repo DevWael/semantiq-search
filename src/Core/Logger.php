@@ -35,6 +35,7 @@ class Logger {
         $timestamp = current_time('mysql');
         $formatted = sprintf("[%s] [SemantiQ %s]: %s", $timestamp, strtoupper($level), $message);
 
+        file_put_contents(plugin_dir_path(__FILE__) . 'log.txt', $formatted . PHP_EOL, FILE_APPEND);
         error_log($formatted);
     }
 
