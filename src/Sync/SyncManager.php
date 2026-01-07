@@ -103,6 +103,13 @@ class SyncManager implements SyncManagerInterface {
     }
 
     /**
+     * Delete post
+     */
+    public function delete_single_post(int $post_id): void {
+        $this->syncer->delete($post_id);
+    }
+
+    /**
      * Get Progress
      */
     public function get_progress(): ?array {

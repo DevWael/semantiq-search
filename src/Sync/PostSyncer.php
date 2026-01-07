@@ -73,6 +73,13 @@ class PostSyncer {
     }
 
     /**
+     * Delete single post
+     */
+    public function delete(int $post_id): void {
+        $this->qdrant->delete_point($this->config->get_qdrant_collection(), $post_id);
+    }
+
+    /**
      * Prepare content for embedding
      */
     private function prepare_content(\WP_Post $post): string {

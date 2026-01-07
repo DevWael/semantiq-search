@@ -67,6 +67,8 @@ class PostHooks {
     public function handle_delete_post(int $post_id): void {
         try {
             // Placeholder: Ideally remove from Qdrant
+            $sync_manager = SyncManager::get_instance();
+            $sync_manager->remove_single_post($post_id);
         } catch (\Exception $e) {
             // Silently fail on delete
         }
